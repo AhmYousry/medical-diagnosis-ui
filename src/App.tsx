@@ -9,6 +9,9 @@ import ProtectedRoute from "@/components/layout/protected-route"
 import LandingPage from "@/pages/landing"
 import LoginPage from "@/pages/login"
 import RegisterPage from "@/pages/register"
+import ForgotPasswordPage from "@/pages/forgot-password"
+import ResetPasswordPage from "@/pages/reset-password"
+import VerifyEmailPage from "@/pages/verify-email"
 import DoctorRegisterPage from "@/pages/doctor-register"
 import UserDashboard from "@/pages/user-dashboard"
 import UploadPage from "@/pages/upload-page"
@@ -44,6 +47,9 @@ export default function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/verify-email" element={<VerifyEmailPage />} />
 
               <Route
                 element={

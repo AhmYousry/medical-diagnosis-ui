@@ -18,4 +18,24 @@ export const authService = {
     const res = await api.get('/auth/me')
     return res.data
   },
+
+  // ── Email verification ─────────────────────────────────────────────────────
+  async verifyEmail(token: string): Promise<{ message: string }> {
+    const res = await api.post('/auth/verify-email', { token })
+    return res.data
+  },
+  async resendVerification(email: string): Promise<{ message: string }> {
+    const res = await api.post('/auth/resend-verification', { email })
+    return res.data
+  },
+
+  // ── Password reset ─────────────────────────────────────────────────────────
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const res = await api.post('/auth/forgot-password', { email })
+    return res.data
+  },
+  async resetPassword(token: string, new_password: string): Promise<{ message: string }> {
+    const res = await api.post('/auth/reset-password', { token, new_password })
+    return res.data
+  },
 }

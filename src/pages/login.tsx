@@ -227,7 +227,14 @@ export default function LoginPage() {
           >
             <form onSubmit={handleSubmit} className="space-y-5">
               <Field id="email" label="Email address" type="email" placeholder="name@example.com" value={email} onChange={setEmail} error={errors.email} index={0} />
-              <Field id="password" label="Password" type="password" placeholder="Enter your password" value={password} onChange={setPassword} error={errors.password} index={1} />
+              <div className="space-y-1.5">
+                <Field id="password" label="Password" type="password" placeholder="Enter your password" value={password} onChange={setPassword} error={errors.password} index={1} />
+                <div className="flex justify-end">
+                  <Link to="/forgot-password" className="text-xs font-medium transition-colors hover:opacity-80" style={{ color: "var(--cyan-500)" }}>
+                    Forgot password?
+                  </Link>
+                </div>
+              </div>
 
               <motion.button
                 custom={2}
