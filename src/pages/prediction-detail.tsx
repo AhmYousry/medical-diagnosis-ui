@@ -1,10 +1,11 @@
 import { useParams, Link } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { predictionsService } from "@/services/predictionsService"
+import { usePredictionSocket } from "@/hooks/usePredictionSocket"
 import {
   Brain, Calendar, Clock, Activity, CheckCircle, XCircle,
-  AlertTriangle, FileText, ArrowLeft, Zap,
+  AlertTriangle, FileText, ArrowLeft, Zap, Wifi,
 } from "lucide-react"
 
 const statusMap: Record<string, { color: string; bg: string; label: string }> = {
@@ -46,6 +47,10 @@ export default function PredictionDetail() {
     queryFn: () => predictionsService.get(id!),
     enabled: !!id,
   })
+
+  // real-time updates via WebSocket — active only while pending/processing
+  const isLive = prediction?.status === "pending" || prediction?.status === "processing"
+  usePredictionSocket(id, { enabled: isLive })
 
   if (isLoading) {
     return (
@@ -132,6 +137,25 @@ export default function PredictionDetail() {
           <div className="flex items-center gap-2">
             <Brain className="h-4 w-4" style={{ color: "var(--cyan-500)" }} />
             <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Analysis Status</span>
+            <AnimatePresence>
+              {isLive && (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold"
+                  style={{ background: "rgba(0,212,255,0.1)", color: "var(--cyan-500)", border: "1px solid rgba(0,212,255,0.2)" }}
+                >
+                  <motion.span
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{ background: "var(--cyan-500)" }}
+                    animate={{ opacity: [1, 0.3, 1] }}
+                    transition={{ duration: 1.2, repeat: Infinity }}
+                  />
+                  Live
+                </motion.span>
+              )}
+            </AnimatePresence>
           </div>
           <span
             className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold capitalize"
