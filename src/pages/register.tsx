@@ -1,0 +1,265 @@
+import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { motion } from "framer-motion"
+import { useToast } from "@/hooks/use-toast"
+import { useAuthStore } from "@/store/authStore"
+import { authService } from "@/services/authService"
+import { Activity, Loader2, Eye, EyeOff, Brain, ShieldCheck, Clock } from "lucide-react"
+
+const fieldVariant = {
+  hidden: { opacity: 0, x: -16 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: 0.3 + i * 0.07 },
+  }),
+}
+
+function Field({
+  id, label, type, placeholder, value, onChange, error, index,
+}: {
+  id: string; label: string; type: string; placeholder: string;
+  value: string; onChange: (v: string) => void; error?: string; index: number
+}) {
+  const [show, setShow] = useState(false)
+  const [focused, setFocused] = useState(false)
+  const isPassword = type === "password"
+
+  return (
+    <motion.div custom={index} variants={fieldVariant} initial="hidden" animate="visible" className="space-y-1.5">
+      <label htmlFor={id} className="block text-sm font-medium" style={{ color: "var(--foreground-muted)" }}>
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          id={id}
+          type={isPassword && show ? "text" : type}
+          placeholder={placeholder}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all duration-200"
+          style={{
+            background: "var(--surface-2)",
+            border: `1px solid ${error ? "var(--destructive)" : focused ? "var(--cyan-500)" : "var(--input-border)"}`,
+            color: "var(--foreground)",
+            paddingRight: isPassword ? "2.75rem" : "1rem",
+            boxShadow: focused && !error ? "0 0 0 3px var(--input-focus)" : "none",
+          }}
+        />
+        {isPassword && (
+          <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: "var(--foreground-subtle)" }}>
+            {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        )}
+      </div>
+      {error && (
+        <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs" style={{ color: "var(--destructive)" }}>
+          {error}
+        </motion.p>
+      )}
+    </motion.div>
+  )
+}
+
+const perks = [
+  { icon: Brain, text: "AI-powered scan analysis" },
+  { icon: Clock, text: "Results in under 5 minutes" },
+  { icon: ShieldCheck, text: "HIPAA & GDPR compliant" },
+]
+
+export default function RegisterPage() {
+  const navigate = useNavigate()
+  const { toast } = useToast()
+  const setUser = useAuthStore(s => s.setUser)
+  const setAuthenticated = useAuthStore(s => s.setAuthenticated)
+
+  const [fullName, setFullName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState<{ fullName?: string; email?: string; password?: string; confirmPassword?: string }>({})
+
+  function validate() {
+    const errs: typeof errors = {}
+    if (!fullName.trim()) errs.fullName = "Full name is required"
+    if (!email) errs.email = "Email is required"
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "Invalid email format"
+    if (!password) errs.password = "Password is required"
+    else if (password.length < 8) errs.password = "Password must be at least 8 characters"
+    if (!confirmPassword) errs.confirmPassword = "Please confirm your password"
+    else if (password !== confirmPassword) errs.confirmPassword = "Passwords do not match"
+    setErrors(errs)
+    return Object.keys(errs).length === 0
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!validate()) return
+    setLoading(true)
+    try {
+      const res = await authService.register({ email, password, full_name: fullName.trim() })
+      localStorage.setItem("access_token", res.access_token)
+      localStorage.setItem("refresh_token", res.refresh_token)
+      setUser(res.user)
+      setAuthenticated(true)
+      toast({ title: "Account created!", description: `Welcome, ${res.user.full_name}` })
+      navigate("/dashboard")
+    } catch (err: unknown) {
+      const msg = err && typeof err === "object" && "response" in err
+        ? (err as { response: { data?: { detail?: string } } }).response?.data?.detail || "Registration failed"
+        : "Registration failed"
+      toast({ title: "Error", description: msg, variant: "destructive" })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="relative flex min-h-screen overflow-hidden" style={{ background: "var(--navy-950)" }}>
+
+      {/* ── Left decorative panel ── */}
+      <div
+        className="relative hidden lg:flex lg:w-1/2 flex-col items-center justify-center overflow-hidden"
+        style={{ background: "linear-gradient(160deg,var(--navy-800),var(--navy-950))", borderRight: "1px solid rgba(0,212,255,0.07)" }}
+      >
+        <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
+          <defs><pattern id="dots2" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#00D4FF" /></pattern></defs>
+          <rect width="100%" height="100%" fill="url(#dots2)" />
+        </svg>
+        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full opacity-15 blur-[100px]" style={{ background: "var(--cyan-600)" }} />
+
+        <div className="relative z-10 flex flex-col items-center gap-10 px-12 text-center">
+          {/* rotating hex/dna visual */}
+          <div className="relative h-48 w-48">
+            <motion.div
+              className="absolute inset-0 rounded-full border-2"
+              style={{ borderColor: "rgba(0,212,255,0.25)" }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
+            />
+            <motion.div
+              className="absolute inset-6 rounded-full border"
+              style={{ borderColor: "rgba(0,212,255,0.15)" }}
+              animate={{ rotate: -360 }}
+              transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <motion.div
+                animate={{ scale: [1, 1.12, 1], opacity: [0.8, 1, 0.8] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Activity className="h-14 w-14" style={{ color: "var(--cyan-500)" }} />
+              </motion.div>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Clash Display',sans-serif", color: "var(--foreground)" }}>
+              Join MedScan AI
+            </h2>
+            <p className="text-sm leading-relaxed max-w-xs" style={{ color: "var(--foreground-muted)" }}>
+              Get instant AI-powered diagnostics for medical scans — precise, fast, and secure.
+            </p>
+          </div>
+
+          <ul className="space-y-3 w-full max-w-xs">
+            {perks.map((p, i) => (
+              <motion.li
+                key={i}
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="flex items-center gap-3 rounded-xl px-4 py-2.5"
+                style={{ background: "var(--surface-1)", border: "1px solid var(--card-border)" }}
+              >
+                <p.icon className="h-4 w-4 shrink-0" style={{ color: "var(--cyan-500)" }} />
+                <span className="text-sm" style={{ color: "var(--foreground-muted)" }}>{p.text}</span>
+              </motion.li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* ── Right form panel ── */}
+      <div className="flex w-full lg:w-1/2 items-center justify-center p-6 overflow-y-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full max-w-md py-8"
+        >
+          {/* logo */}
+          <div className="mb-8 flex items-center gap-3">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.1 }}
+              className="flex h-10 w-10 items-center justify-center rounded-xl"
+              style={{ background: "var(--cyan-500)" }}
+            >
+              <Activity className="h-5 w-5" style={{ color: "var(--navy-950)" }} />
+            </motion.div>
+            <span className="text-xl font-semibold" style={{ fontFamily: "'Clash Display',sans-serif", color: "var(--foreground)" }}>
+              MedScan AI
+            </span>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18, duration: 0.5 }}
+            className="mb-8"
+          >
+            <h1 className="text-3xl font-bold" style={{ fontFamily: "'Clash Display',sans-serif", color: "var(--foreground)" }}>
+              Create account
+            </h1>
+            <p className="mt-1.5 text-sm" style={{ color: "var(--foreground-muted)" }}>
+              Start your AI-powered diagnostic journey
+            </p>
+          </motion.div>
+
+          <div className="rounded-2xl p-8" style={{ background: "var(--surface-1)", border: "1px solid var(--card-border)" }}>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Field id="fullName" label="Full Name" type="text" placeholder="John Doe" value={fullName} onChange={setFullName} error={errors.fullName} index={0} />
+              <Field id="email" label="Email address" type="email" placeholder="name@example.com" value={email} onChange={setEmail} error={errors.email} index={1} />
+              <Field id="password" label="Password" type="password" placeholder="At least 8 characters" value={password} onChange={setPassword} error={errors.password} index={2} />
+              <Field id="confirmPassword" label="Confirm Password" type="password" placeholder="Repeat your password" value={confirmPassword} onChange={setConfirmPassword} error={errors.confirmPassword} index={3} />
+
+              <motion.button
+                custom={4}
+                variants={fieldVariant}
+                initial="hidden"
+                animate="visible"
+                type="submit"
+                disabled={loading}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold transition-all duration-200 disabled:opacity-70"
+                style={{ background: "var(--cyan-500)", color: "var(--navy-950)", boxShadow: "0 4px 20px rgba(0,212,255,0.25)" }}
+              >
+                {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating account…</> : "Create Account"}
+              </motion.button>
+            </form>
+          </div>
+
+          <motion.p
+            custom={5}
+            variants={fieldVariant}
+            initial="hidden"
+            animate="visible"
+            className="mt-6 text-center text-sm"
+            style={{ color: "var(--foreground-muted)" }}
+          >
+            Already have an account?{" "}
+            <Link to="/login" className="font-medium transition-opacity hover:opacity-80" style={{ color: "var(--cyan-500)" }}>
+              Sign in
+            </Link>
+          </motion.p>
+        </motion.div>
+      </div>
+    </div>
+  )
+}
