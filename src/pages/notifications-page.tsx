@@ -1,12 +1,12 @@
-import { useState, useMemo } from "react"
+import { useMemo } from "react"
+import { useNavigate } from "react-router-dom"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { motion } from "framer-motion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/hooks/use-toast"
-import api from "@/services/api"
+import { notificationsService } from "@/services/notificationsService"
 import type { Notification } from "@/types"
 import { Bell, CheckCheck, Brain, AlertCircle, Info, Loader2 } from "lucide-react"
 
@@ -47,22 +47,24 @@ function timeAgo(dateStr: string): string {
 
 export default function NotificationsPage() {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const { toast } = useToast()
 
   const { data, isLoading, isError, refetch } = useQuery<Notification[]>({
     queryKey: ["notifications"],
-    queryFn: async () => {
-      const res = await api.get("/notifications")
-      return res.data
-    },
+    queryFn: notificationsService.list,
+    refetchInterval: 30_000,
   })
 
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["notifications"] })
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread"] })
+  }
+
   const markAllReadMutation = useMutation({
-    mutationFn: async () => {
-      await api.post("/notifications/read-all")
-    },
+    mutationFn: notificationsService.markAllRead,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] })
+      invalidate()
       toast({ title: "All notifications marked as read" })
     },
     onError: () => {
@@ -71,16 +73,20 @@ export default function NotificationsPage() {
   })
 
   const markReadMutation = useMutation({
-    mutationFn: async (id: string) => {
-      await api.post(`/notifications/${id}/read`)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] })
-    },
+    mutationFn: notificationsService.markRead,
+    onSuccess: invalidate,
     onError: () => {
       toast({ title: "Failed to mark notification as read", variant: "destructive" })
     },
   })
+
+  const handleClick = (n: Notification) => {
+    if (n.status === "unread") markReadMutation.mutate(n.id)
+    const predictionId = n.payload?.prediction_id
+    if (typeof predictionId === "string") {
+      navigate(`/predictions/${predictionId}`)
+    }
+  }
 
   const notifications = data ?? []
   const unreadCount = useMemo(
@@ -164,9 +170,7 @@ export default function NotificationsPage() {
                     className={`cursor-pointer transition-colors hover:bg-accent/50 ${
                       isUnread ? "border-l-2 border-l-primary" : ""
                     }`}
-                    onClick={() => {
-                      if (isUnread) markReadMutation.mutate(notification.id)
-                    }}
+                    onClick={() => handleClick(notification)}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start gap-4">

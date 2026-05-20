@@ -1,12 +1,49 @@
 import { Link, useLocation } from "react-router-dom"
 import { motion } from "framer-motion"
+import { useQuery } from "@tanstack/react-query"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAuthStore } from "@/store/authStore"
+import { notificationsService } from "@/services/notificationsService"
 import { Bell, LogOut, Settings, ChevronDown } from "lucide-react"
+
+function NotificationsBell() {
+  const { data: unread = 0 } = useQuery({
+    queryKey: ["notifications-unread"],
+    queryFn: notificationsService.unreadCount,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+  })
+
+  return (
+    <Link to="/notifications">
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="relative flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/5"
+        style={{ color: "var(--foreground-muted)" }}
+        aria-label={unread > 0 ? `${unread} unread notifications` : "Notifications"}
+      >
+        <Bell className="h-4 w-4" />
+        {unread > 0 && (
+          <span
+            className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-semibold"
+            style={{
+              background: "var(--cyan-500)",
+              color: "var(--navy-950)",
+              boxShadow: "0 0 8px rgba(0,212,255,0.5)",
+            }}
+          >
+            {unread > 99 ? "99+" : unread}
+          </span>
+        )}
+      </motion.button>
+    </Link>
+  )
+}
 
 function BreadcrumbSegment({ path }: { path: string }) {
   const segments = path.replace(/^\//, "").split("/")
@@ -51,20 +88,7 @@ export default function Navbar() {
       <div className="flex items-center gap-1.5">
 
         {/* notifications */}
-        <Link to="/notifications">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="relative flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-white/5"
-            style={{ color: "var(--foreground-muted)" }}
-          >
-            <Bell className="h-4 w-4" />
-            <span
-              className="absolute right-1 top-1 h-2 w-2 rounded-full"
-              style={{ background: "var(--cyan-500)", boxShadow: "0 0 6px var(--cyan-500)" }}
-            />
-          </motion.button>
-        </Link>
+        <NotificationsBell />
 
         {/* profile dropdown */}
         <DropdownMenu>

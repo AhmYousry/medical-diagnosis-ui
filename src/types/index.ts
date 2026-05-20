@@ -117,10 +117,11 @@ export interface PredictionLog {
 
 export interface Notification {
   id: string
-  user_id: string
-  type: string
+  type: 'system' | 'prediction_completed' | 'prediction_failed' | string
   title: string
   message: string
-  status: 'unread' | 'read'
+  status: 'unread' | 'read' | 'archived'
+  payload?: Record<string, unknown> | null
+  read_at?: string | null
   created_at: string
 }
