@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useToast } from "@/hooks/use-toast"
 import { uploadsService } from "@/services/uploadsService"
 import { predictionsService } from "@/services/predictionsService"
+import { MedicalDisclaimer } from "@/components/MedicalDisclaimer"
 import { Upload, FileImage, CheckCircle, Loader2, Brain, ScanLine, ArrowRight, X } from "lucide-react"
 
 type Step = "upload" | "analyzing" | "results"
@@ -128,6 +129,9 @@ export default function UploadPage() {
           Submit a medical image for AI-powered analysis.
         </p>
       </div>
+
+      {/* research-use-only disclaimer */}
+      <MedicalDisclaimer variant="compact" />
 
       {/* step indicator */}
       <div className="flex items-center gap-0">

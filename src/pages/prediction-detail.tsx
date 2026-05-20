@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "framer-motion"
 import { predictionsService } from "@/services/predictionsService"
 import { usePredictionSocket } from "@/hooks/usePredictionSocket"
+import { MedicalDisclaimer } from "@/components/MedicalDisclaimer"
 import {
   Brain, Calendar, Clock, Activity, CheckCircle, XCircle,
   AlertTriangle, FileText, ArrowLeft, Zap, Wifi,
@@ -122,6 +123,13 @@ export default function PredictionDetail() {
           <p className="text-xs font-mono mt-0.5" style={{ color: "var(--foreground-subtle)" }}>ID: {prediction.id}</p>
         </div>
       </motion.div>
+
+      {/* disclaimer banner — show only once results are visible */}
+      {prediction.status === "completed" && (
+        <motion.div variants={item}>
+          <MedicalDisclaimer variant="banner" />
+        </motion.div>
+      )}
 
       {/* status + timeline card */}
       <motion.div

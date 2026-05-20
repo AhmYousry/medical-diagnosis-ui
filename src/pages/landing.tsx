@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { motion, useScroll, useTransform, useInView } from "framer-motion"
 import { Activity, Shield, Zap, Brain, Upload, FileText, Stethoscope, ArrowRight, Sparkles, Lock } from "lucide-react"
+import { MedicalDisclaimer } from "@/components/MedicalDisclaimer"
 
 /* ── animation variants ── */
 const fadeUp = {
@@ -433,14 +434,19 @@ export default function LandingPage() {
 
       {/* ── Footer ── */}
       <footer className="border-t py-8 px-4" style={{ borderColor: "rgba(0,212,255,0.06)" }}>
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 sm:flex-row">
-          <div className="flex items-center gap-2" style={{ color: "var(--foreground-muted)" }}>
-            <Activity className="h-4 w-4" style={{ color: "var(--cyan-500)" }} />
-            <span className="text-sm font-medium" style={{ fontFamily: "'Clash Display',sans-serif" }}>MedScan AI</span>
+        <div className="mx-auto flex max-w-7xl flex-col gap-4">
+          <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
+            <div className="flex items-center gap-2" style={{ color: "var(--foreground-muted)" }}>
+              <Activity className="h-4 w-4" style={{ color: "var(--cyan-500)" }} />
+              <span className="text-sm font-medium" style={{ fontFamily: "'Clash Display',sans-serif" }}>MedScan AI</span>
+            </div>
+            <p className="text-sm" style={{ color: "var(--foreground-subtle)" }}>
+              &copy; {new Date().getFullYear()} MedScan AI. All rights reserved.
+            </p>
           </div>
-          <p className="text-sm" style={{ color: "var(--foreground-subtle)" }}>
-            &copy; {new Date().getFullYear()} MedScan AI. All rights reserved.
-          </p>
+          <div className="border-t pt-4" style={{ borderColor: "rgba(0,212,255,0.04)" }}>
+            <MedicalDisclaimer variant="footnote" className="text-center" />
+          </div>
         </div>
       </footer>
     </div>
