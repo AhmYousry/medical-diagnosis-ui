@@ -128,7 +128,7 @@ export default function AdminPredictionDetail() {
                 <span className="text-muted-foreground">Confidence</span>
                 <span className="font-medium">
                   {prediction.confidence_score !== undefined
-                    ? `${prediction.confidence_score.toFixed(2)}%`
+                    ? `${Number(prediction.confidence_score).toFixed(2)}%`
                     : <span className="text-muted-foreground italic">N/A</span>}
                 </span>
               </div>
