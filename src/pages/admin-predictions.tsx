@@ -166,7 +166,7 @@ export default function AdminPredictionsPage() {
                     )}
                     {pred.confidence_score !== undefined && (
                       <span className="hidden md:block text-xs font-medium" style={{ color: "var(--foreground-muted)" }}>
-                        {(pred.confidence_score * 100).toFixed(1)}%
+                        {pred.confidence_score.toFixed(1)}%
                       </span>
                     )}
                     <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ color: s.color, background: s.bg }}>

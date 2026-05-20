@@ -395,7 +395,7 @@ export default function UploadPage() {
                     </p>
                     {result.prediction.confidence_score !== undefined && (
                       <p className="text-xs mt-0.5" style={{ color: "var(--foreground-muted)" }}>
-                        Confidence: {(result.prediction.confidence_score * 100).toFixed(1)}%
+                        Confidence: {result.prediction.confidence_score.toFixed(1)}%
                       </p>
                     )}
                     <p className="text-xs capitalize mt-0.5" style={{ color: "var(--foreground-subtle)" }}>

@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { adminService } from "@/services/adminService"
-import { Brain, Calendar, Clock, Activity, CheckCircle, XCircle, AlertTriangle, User, FileText, History, ArrowLeft } from "lucide-react"
+import { Brain, Calendar, Clock, Activity, CheckCircle, XCircle, AlertTriangle, User, History, ArrowLeft } from "lucide-react"
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ComponentType<{ className?: string }> }> = {
   pending: { label: "Pending", variant: "secondary", icon: Clock },
@@ -128,7 +128,7 @@ export default function AdminPredictionDetail() {
                 <span className="text-muted-foreground">Confidence</span>
                 <span className="font-medium">
                   {prediction.confidence_score !== undefined
-                    ? `${(prediction.confidence_score * 100).toFixed(2)}%`
+                    ? `${prediction.confidence_score.toFixed(2)}%`
                     : <span className="text-muted-foreground italic">N/A</span>}
                 </span>
               </div>
@@ -183,28 +183,6 @@ export default function AdminPredictionDetail() {
           </div>
         </CardContent>
       </Card>
-
-      {prediction.result && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <FileText className="h-4 w-4 text-primary" />
-              Result Data
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <pre className="bg-muted rounded-lg p-4 text-xs overflow-auto max-h-64 whitespace-pre-wrap font-mono">
-              {typeof prediction.result === "object"
-                ? JSON.stringify(prediction.result, null, 2)
-                : (() => {
-                    try { return JSON.stringify(JSON.parse(prediction.result as string), null, 2) }
-                    catch { return String(prediction.result) }
-                  })()
-              }
-            </pre>
-          </CardContent>
-        </Card>
-      )}
 
       {prediction.error_message && (
         <Card className="border-destructive/50">

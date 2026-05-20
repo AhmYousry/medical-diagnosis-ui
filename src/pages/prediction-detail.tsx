@@ -243,13 +243,13 @@ export default function PredictionDetail() {
                   <motion.div
                     className="h-full rounded-full"
                     initial={{ width: 0 }}
-                    animate={{ width: `${prediction.confidence_score * 100}%` }}
+                    animate={{ width: `${Math.min(prediction.confidence_score, 100)}%` }}
                     transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
                     style={{ background: "var(--cyan-500)" }}
                   />
                 </div>
                 <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-                  {(prediction.confidence_score * 100).toFixed(2)}%
+                  {prediction.confidence_score.toFixed(2)}%
                 </span>
               </div>
             ) : (
@@ -277,34 +277,6 @@ export default function PredictionDetail() {
           )}
         </motion.div>
       </div>
-
-      {/* result data */}
-      {prediction.result && (
-        <motion.div
-          variants={item}
-          className="rounded-2xl overflow-hidden"
-          style={{ background: "var(--surface-1)", border: "1px solid var(--card-border)" }}
-        >
-          <div className="flex items-center gap-2 px-5 py-4" style={{ borderBottom: "1px solid var(--card-border)" }}>
-            <FileText className="h-4 w-4" style={{ color: "var(--cyan-500)" }} />
-            <h2 className="text-sm font-semibold" style={{ fontFamily: "'Clash Display',sans-serif", color: "var(--foreground)" }}>Result Data</h2>
-          </div>
-          <div className="p-5">
-            <pre
-              className="rounded-xl p-4 text-xs overflow-auto max-h-64 whitespace-pre-wrap font-mono"
-              style={{ background: "var(--surface-2)", color: "var(--foreground-muted)", border: "1px solid var(--card-border)" }}
-            >
-              {typeof prediction.result === "object"
-                ? JSON.stringify(prediction.result, null, 2)
-                : (() => {
-                    try { return JSON.stringify(JSON.parse(prediction.result as string), null, 2) }
-                    catch { return String(prediction.result) }
-                  })()
-              }
-            </pre>
-          </div>
-        </motion.div>
-      )}
 
       {/* error message */}
       {prediction.error_message && (

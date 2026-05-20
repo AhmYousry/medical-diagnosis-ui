@@ -229,7 +229,7 @@ export default function PredictionsPage() {
                       <StatusBadge status={pred.status} />
                       {pred.confidence_score !== undefined && (
                         <span className="text-xs font-medium hidden sm:inline" style={{ color: "var(--foreground-muted)" }}>
-                          {(pred.confidence_score * 100).toFixed(1)}%
+                          {pred.confidence_score.toFixed(1)}%
                         </span>
                       )}
                       <ArrowRight
