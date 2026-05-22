@@ -93,6 +93,21 @@ export interface PredictionListResponse {
   total: number
 }
 
+// Shape of the JSON payload returned by the AI model service
+// (stored verbatim in Prediction.result)
+export interface AIPredictionResult {
+  "Predicted class"?: string
+  confidence?: number
+  model?: string
+  model_version?: string
+  device?: string
+  tta?: boolean
+  threshold?: number
+  pathologies?: Record<string, number>          // label -> probability (0-1)
+  top_findings?: { label: string; probability: number }[]
+  inference_time_ms?: number
+}
+
 export interface AdminUserResponse extends User {
   doctor_profile_id?: string
   doctor_verification_status?: string

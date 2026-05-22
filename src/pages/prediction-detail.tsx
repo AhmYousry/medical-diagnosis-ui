@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { predictionsService } from "@/services/predictionsService"
 import { usePredictionSocket } from "@/hooks/usePredictionSocket"
 import { MedicalDisclaimer } from "@/components/MedicalDisclaimer"
+import { PathologyFindings } from "@/components/PathologyFindings"
+import type { AIPredictionResult } from "@/types"
 import {
   Brain, Calendar, Clock, Activity, CheckCircle, XCircle,
   AlertTriangle, FileText, ArrowLeft, Zap, Wifi,
@@ -94,6 +96,15 @@ export default function PredictionDetail() {
   }
 
   const status = statusMap[prediction.status] ?? statusMap.pending
+
+  // The AI result is stored as JSONB (object) but may arrive as a string —
+  // normalize to a typed object so we can render the pathology breakdown.
+  const aiResult: AIPredictionResult | null = (() => {
+    if (!prediction.result) return null
+    if (typeof prediction.result === "object") return prediction.result as AIPredictionResult
+    try { return JSON.parse(prediction.result as string) as AIPredictionResult }
+    catch { return null }
+  })()
 
   const getTimelineState = (stepKey: string) => {
     if (stepKey === "created") return "complete"
@@ -277,6 +288,13 @@ export default function PredictionDetail() {
           )}
         </motion.div>
       </div>
+
+      {/* pathology breakdown — all 18 findings from the AI model */}
+      {aiResult?.pathologies && (
+        <motion.div variants={item}>
+          <PathologyFindings result={aiResult} threshold={aiResult.threshold ?? 0.5} />
+        </motion.div>
+      )}
 
       {/* error message */}
       {prediction.error_message && (
